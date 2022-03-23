@@ -89,6 +89,8 @@ void drawPlayer(double pan);
 // calculates the map array index corresponding to the block the player currently stands on.
 void calculateIndex();
 
+void findWallSide(double siX, double siY, int box);
+
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 
@@ -125,9 +127,33 @@ void drawSight(double px0, double py0, double angle)
 			sightTest = 1;
 		}
 	
-	}
-	SDL_SetRenderDrawColor( gRenderer, 0xfc, 0xcb, 0x42, 0xFF );		
+	}		
+	findWallSide(plxI,plyI,boxSize);
 	SDL_RenderDrawLine( gRenderer, px+1, py+1, plxI, plyI );
+}
+void findWallSide(double siX, double siY, int box)
+{
+ 	int dpx = floor(siX/box) * box;
+	int dpy = floor(siY/box) * box;
+
+	if(abs(dpx+box-siX) < abs(dpx-siX))
+	{
+		dpx = dpx+box;
+	}
+	if(abs(dpy+box-siY) < abs(dpy-siY) )
+	{
+		dpy = dpy+box;
+	}
+
+	if(abs(dpx-siX) < abs(dpy-siY))
+	{
+		SDL_SetRenderDrawColor( gRenderer, 0xff, 0x22, 0x33, 0xFF );
+	}
+	else
+	{
+		SDL_SetRenderDrawColor( gRenderer, 0x11, 0x22, 0x42, 0xFF );
+	}
+	
 }
 void drawPlayer(double pan, double playerX, double playerY)
 {
