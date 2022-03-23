@@ -10,7 +10,7 @@ and may not be redistributed without written permission.*/
 #include <iostream>
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 1000;
+const int SCREEN_WIDTH = 2000;
 const int SCREEN_HEIGHT = 600;
 const double PI = 3.141592653589793238;
 //x and y are starting positions of the map building blocks. 
