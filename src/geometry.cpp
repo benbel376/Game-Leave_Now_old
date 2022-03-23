@@ -10,28 +10,50 @@ and may not be redistributed without written permission.*/
 #include <iostream>
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 864;
-const int SCREEN_HEIGHT = 486;
+const int SCREEN_WIDTH = 1000;
+const int SCREEN_HEIGHT = 600;
 const double PI = 3.141592653589793238;
 //x and y are starting positions of the map building blocks. 
-// t is the row breaker that determines the number of blocks in a row.
+// rowSize is the row breaker that determines the number of blocks in a row.
 // px and py are the position of the player.
 // boxSize determines the size of one block.
 // pxi and pyi are the amount of increments added and subtracted from px and py during movement.
-int x, y, t, boxSize = 54;
+int x, y, rowSize = 50, boxSize = 20;
 double px, py, pxi, pyi, plx, ply; 
 double pa;
 int map[] = 
 {
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,
-1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,
-1,0,0,1,0,0,0,1,1,1,0,0,0,0,0,1,
-1,0,0,1,0,0,0,0,0,0,0,1,1,1,0,1,
-1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,
-1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,
-1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,2,2,2,2,1,2,2,2,1,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,
+1,2,0,0,0,0,0,0,0,1,1,2,0,0,2,1,2,0,0,0,2,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,2,1,
+1,2,0,0,0,0,0,0,0,0,1,2,0,0,2,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,2,1,
+1,2,0,0,0,0,0,0,0,0,1,2,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,2,0,2,1,
+1,2,0,0,0,0,0,0,0,0,1,2,0,2,2,1,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,
+1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,2,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,2,0,2,1,
+1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,2,1,
+1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,2,2,1,
+1,2,0,0,0,1,2,0,0,0,1,2,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1,2,0,0,0,1,1,1,1,1,
+1,2,0,0,0,0,0,0,0,0,1,2,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,2,0,0,0,0,0,1,2,0,0,0,0,0,0,2,1,
+1,2,0,0,2,2,2,2,0,0,1,2,2,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,2,1,
+1,2,0,0,2,1,1,2,0,0,1,1,1,1,1,1,0,0,0,0,1,0,0,1,1,1,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,2,1,
+1,2,0,0,2,1,1,2,0,0,0,0,0,0,0,1,0,0,0,0,2,0,0,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,2,0,0,2,2,2,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,2,1,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,2,1,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,0,0,0,0,0,2,1,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,2,0,0,1,2,2,0,0,0,1,2,0,0,0,1,2,2,2,0,0,0,0,0,2,1,0,0,0,2,1,0,0,2,2,2,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,2,0,0,1,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,0,0,2,1,2,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,1,1,0,1,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,2,2,2,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,2,0,0,2,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,2,0,0,2,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+
 };
 //the size of the array.
 int mapSize = sizeof(map)/sizeof(*map);
@@ -45,12 +67,24 @@ bool loadMedia();
 
 //Frees media and shuts down SDL
 void close();
-// calculates the index corresponding to the 
+// calculates the map array index corresponding to the pixel position of the player on the screen.
+//cpx is the x postion of the player.
+//cpy is the y posion of the player.
+//box is the size of each blocks of the map
+//max is the number of blocks in a single row of the map.
 int calculateIndex(double cpx, double cpy, int box, int max);
-// draws a map on the screen.
 
+//renders the view of the player
+//px0 x position of the player.
+//pyo y position of the player.
+// the angle of view.
+void drawSight(double px0, double py0, double angle);
+
+// draws a map on the screen.
 void drawMap();
+
 // draws a player on the screen.
+//pan: the angle of the player.
 void drawPlayer(double pan);
 // calculates the map array index corresponding to the block the player currently stands on.
 void calculateIndex();
@@ -68,22 +102,23 @@ int calculateIndex(double cpx, double cpy, int box, int max)
 	int index = (max*dpy) + dpx;
 	return index;
 }
-void drawSight(double px0, double py0, double angle){
+void drawSight(double px0, double py0, double angle)
+{
 	int len = 0;
 	int sightTest = 0;
 	double plxI = px0;
 	double plyI = px0;
 	while(sightTest == 0)
 	{
-		len = len + 10;
+		len = len + 1;
 		plxI = px0+1+len*cos(angle);
 		plyI = py0+1+len*sin(angle);
 		
-		if(map[calculateIndex(plxI, plyI, boxSize, 16)] == 1)
+		if(map[calculateIndex(plxI, plyI, boxSize, rowSize)] != 0)
 		{
-			while(map[calculateIndex(plxI, plyI, boxSize, 16)] == 1)
+			while(map[calculateIndex(plxI, plyI, boxSize, rowSize)] != 0)
 			{
-				len = len-2;
+				len = len-1;
 				plxI = px0+1+len*cos(angle);
 				plyI = py0+1+len*sin(angle);
 			}
@@ -91,13 +126,15 @@ void drawSight(double px0, double py0, double angle){
 		}
 	
 	}
-	SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xaa, 0x35, 0xFF );		
+	SDL_SetRenderDrawColor( gRenderer, 0xfc, 0xcb, 0x42, 0xFF );		
 	SDL_RenderDrawLine( gRenderer, px+1, py+1, plxI, plyI );
 }
-void drawPlayer(double pan)
+void drawPlayer(double pan, double playerX, double playerY)
 {
 	double plx1 = px, ply1 = py, plx2 = px, ply2 = py, plx3 = px, ply3 = py;
-	SDL_Rect fillRect = { px, py, 3, 3 };
+	int pxx = round(playerX);
+	int pyy = round(playerY);
+	SDL_Rect fillRect = { pxx, pyy, 3, 3 };
 	SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xaa, 0x35, 0xFF );		
 	SDL_RenderFillRect( gRenderer, &fillRect );
 	
@@ -105,7 +142,7 @@ void drawPlayer(double pan)
 	int counter = 0;
 	double increment = -0.6;
 	while(counter < 192){
-		drawSight(px, py, (pan+increment));
+		drawSight(pxx, pyy, (pan+increment));
 		increment = increment + 0.00625;
 		counter = counter + 1;
 	}
@@ -116,7 +153,8 @@ void drawPlayer(double pan)
 }
 void drawMap()
 {
-	x = 0; y = 0; t = 15; boxSize = 54;
+	x = 0; y = 0;
+	int t = rowSize - 1;
 	for(int i = 0; i < mapSize; i++)
 	{
 		//Render red filled quad
@@ -125,9 +163,13 @@ void drawMap()
 		{
 			SDL_SetRenderDrawColor( gRenderer, 0x11, 0x11, 0x11, 0xFF );
 		}
+		else if(map[i] == 2)
+		{
+			SDL_SetRenderDrawColor( gRenderer, 0x12, 0x96, 0x35, 0xFF );
+		}
 		else
 		{
-			SDL_SetRenderDrawColor( gRenderer, 0x35, 0x75, 0xa3, 0xFF );
+			SDL_SetRenderDrawColor( gRenderer, 0xf7, 0xe2, 0xbc, 0xFF );
 		} 
 		
 		SDL_RenderFillRect( gRenderer, &fillRect );
@@ -138,7 +180,7 @@ void drawMap()
 		}
 		else
 		{
-			t = t + 16;
+			t = t + rowSize;
 			x = 0;
 			y = y + boxSize;
 		}
@@ -288,7 +330,7 @@ int main( int argc, char* args[] )
 							case SDLK_UP:
 							py = py + (6*pyi); 
 							px = px + (6*pxi);
-							if(map[calculateIndex(px, py, boxSize, 16)] == 1)
+							if(map[calculateIndex(px, py, boxSize, rowSize)] != 0)
 							{
 								py = py - (5*pyi); 
 								px = px - (5*pxi);
@@ -304,7 +346,7 @@ int main( int argc, char* args[] )
 
 							py = py - (6*pyi); 
 							px = px - (6*pxi);
-							if(map[calculateIndex(px, py, boxSize, 16)] == 1)
+							if(map[calculateIndex(px, py, boxSize, rowSize)] != 0)
 							{
 								py = py + (5*pyi); 
 								px = px + (5*pxi);
@@ -328,7 +370,7 @@ int main( int argc, char* args[] )
 				SDL_RenderClear( gRenderer );
 				drawMap();
 				
-				drawPlayer(pa);
+				drawPlayer(pa, px, py);
 				
 				//Update screen
 				SDL_RenderPresent( gRenderer );
