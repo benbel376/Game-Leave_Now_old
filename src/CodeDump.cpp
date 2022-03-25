@@ -10,7 +10,7 @@ and may not be redistributed without written permission.*/
 #include <iostream>
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 2000;
+const int SCREEN_WIDTH = 1500;
 const int SCREEN_HEIGHT = 600;
 const double PI = 3.141592653589793238;
 //x and y are starting positions of the map building blocks. 
@@ -18,7 +18,7 @@ const double PI = 3.141592653589793238;
 // px and py are the position of the player.
 // boxSize determines the size of one block.
 // pxi and pyi are the amount of increments added and subtracted from px and py during movement.
-int x, y, rowSize = 50, boxSize = 20;
+int x, y, startX = 1010, colorType, rowSize = 50, boxSize = 20;
 double px, py, pxi, pyi, plx, ply; 
 double pa;
 int map[] = 
@@ -89,7 +89,9 @@ void drawPlayer(double pan);
 // calculates the map array index corresponding to the block the player currently stands on.
 void calculateIndex();
 
-void findWallSide(double siX, double siY, int box);
+void draw3dSeen(double dis);
+int * checkVert(double px0, double py0, double angle);
+int * checkHori(double px0, double py0, double angle);
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -97,67 +99,155 @@ SDL_Window* gWindow = NULL;
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
 
+
+void draw3dSeen(double dis, double pan)
+{
+	int sightPlain = SCREEN_HEIGHT/2;
+	int height = (boxSize*500/(cos(pan)*dis));
+
+	SDL_Rect fillRect = { startX, sightPlain - (height/2) , 2, height };
+	if(colorType == 1){
+		SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x22, 0x35, 0xFF );
+	}
+	else{
+		SDL_SetRenderDrawColor( gRenderer, 0x33, 0xff, 0x35, 0xFF );
+	}		
+	SDL_RenderFillRect( gRenderer, &fillRect );
+	startX = startX + 2;
+
+}
 int calculateIndex(double cpx, double cpy, int box, int max)
 {
-	int dpx = floor(cpx/box);
-	int dpy = floor(cpy/box);
+	
+	int dpx = floor(cpx/(box));
+	int dpy = floor(cpy/(box));
 	int index = (max*dpy) + dpx;
 	return index;
 }
-void drawSight(double px0, double py0, double angle)
+int * checkHori(double px0, double py0, double angle)
 {
-	int len = 0;
-	int sightTest = 0;
-	double plxI = px0;
-	double plyI = px0;
-	while(sightTest == 0)
+	std::cout << (floor(px0/boxSize) * boxSize)<< "##" << px0<< "**" << py0<< "\n";
+	static int coor[2];
+	int y = round(py0);
+	int x = round(px0);
+	if(angle == PI || angle == 2*PI || angle == 0)
 	{
-		len = len + 1;
-		plxI = px0+1+len*cos(angle);
-		plyI = py0+1+len*sin(angle);
+		/* int * co = checkVert(x, y, angle);
+		x = co[0];
+		y = co[1]; */
+	}
+	else if(angle < PI && angle > 0)
+	{
 		
-		if(map[calculateIndex(plxI, plyI, boxSize, rowSize)] != 0)
+		double tang = tan(angle);
+		y = (floor(py0/boxSize) * boxSize) + boxSize;
+		x = px0 + abs(y-py0)/tang;
+		
+
+		while (map[calculateIndex(x, y, boxSize, rowSize)] == 0)
 		{
-			while(map[calculateIndex(plxI, plyI, boxSize, rowSize)] != 0)
-			{
-				len = len-1;
-				plxI = px0+1+len*cos(angle);
-				plyI = py0+1+len*sin(angle);
-			}
-			sightTest = 1;
+			std::cout << x << "##" << y << "**" << map[calculateIndex(x, y, boxSize, rowSize)] << "\n";
+			y = y + boxSize;
+			x = x + abs(boxSize)/tang;
 		}
-	
-	}		
-	findWallSide(plxI,plyI,boxSize);
-	SDL_RenderDrawLine( gRenderer, px+1, py+1, plxI, plyI );
-}
-void findWallSide(double siX, double siY, int box)
-{
- 	int dpx = floor(siX/box) * box;
-	int dpy = floor(siY/box) * box;
-
-	if(abs(dpx+box-siX) < abs(dpx-siX))
-	{
-		dpx = dpx+box;
-	}
-	if(abs(dpy+box-siY) < abs(dpy-siY) )
-	{
-		dpy = dpy+box;
-	}
-
-	if(abs(dpx-siX) < abs(dpy-siY))
-	{
-		SDL_SetRenderDrawColor( gRenderer, 0xff, 0x22, 0x33, 0xFF );
+		
 	}
 	else
 	{
-		SDL_SetRenderDrawColor( gRenderer, 0x11, 0x22, 0x42, 0xFF );
+		double tang = tan((2*PI) - angle);
+		y = (floor(py0/boxSize) * boxSize);
+		x = px0 + abs(py0-y)/tang;	
+		
+		while (map[calculateIndex(x, y, boxSize, rowSize)] == 0)
+		{
+			std::cout << x << "##" << y << "**" << map[calculateIndex(x, y, boxSize, rowSize)] << "\n";
+			y = y - boxSize;
+			x = x + abs(boxSize)/tang;
+		}
+
 	}
-	
+	coor[0] = x;
+	coor[1] = y;
+	return coor;
 }
+
+int * checkVert(double px0, double py0, double angle)
+{
+	static int coor[2];
+	int y = round(py0);
+	int x = round(px0);
+	if(angle == PI/2 || angle == 1.5*PI)
+	{
+		/* int * co = checkHori(x, y, angle);
+		x = co[0];
+		y = co[1]; */
+	}
+	else if((angle < PI/2 && angle >= 0) || (angle > 1.5*PI && angle <= 2*PI))
+	{
+		
+		
+		double tang = tan(angle);
+		x = (floor(px0/boxSize) * boxSize) + boxSize;
+		y = py0 + abs(x-px0) * tang;
+		
+		while (map[calculateIndex(x, y, boxSize, rowSize)] == 0)
+		{
+			
+			x = x + boxSize;
+			y = y + abs(boxSize) * tang;
+		}
+		
+	}
+	else
+	{
+		double tang = tan((2*PI) - angle);
+		
+		x = (floor(px0/boxSize) * boxSize);
+		y = py0 + abs(px0-x)* tang;
+		
+		while (map[calculateIndex(x, y, boxSize, rowSize)] == 0)
+		{
+			x = x - boxSize;
+			y = y + abs(boxSize) * tang;
+		}
+	}
+	coor[0] = x;
+	coor[1] = y;
+	return coor;
+}
+void drawSight(double px0, double py0, double angle, double inc)
+{
+	
+	int * co = checkHori(px0+1, py0+1, angle);
+	int * co2 = checkVert(px0+1, py0+1, angle);
+	int x = co[0];
+	int y = co[1];
+	int x2 = co2[0];
+	int y2 = co2[1];
+	/* double p1 = sqrt(((x-px0)*(x-px0)) + ((y-py0)*(y-py0)));
+	double p2 = sqrt(((co2[0]-px0)*(co2[0]-px0)) + ((co2[1]-py0)*(co2[1]-py0)));
+
+
+	if(p1 > p2){
+		x = co2[0];
+		y = co2[1];
+		colorType = 2;
+	}else{
+		colorType = 1;
+	} */
+	
+	double distance = sqrt((((px+1-x)*(px+1-x)) + ((py+1-y)*(py+1-y))));	
+	SDL_SetRenderDrawColor( gRenderer, 0x33, 0xff, 0x35, 0xFF );
+	SDL_RenderDrawLine( gRenderer, px+1, py+1, x, y );
+	SDL_SetRenderDrawColor( gRenderer, 0x99, 0x22, 0x35, 0xFF );
+	SDL_RenderDrawLine( gRenderer, px, py, x2, y2 );
+	draw3dSeen(distance, inc);
+}
+
 void drawPlayer(double pan, double playerX, double playerY)
 {
 	double plx1 = px, ply1 = py, plx2 = px, ply2 = py, plx3 = px, ply3 = py;
+	
 	int pxx = round(playerX);
 	int pyy = round(playerY);
 	SDL_Rect fillRect = { pxx, pyy, 3, 3 };
@@ -166,14 +256,17 @@ void drawPlayer(double pan, double playerX, double playerY)
 	
 	//Draw blue horizontal line
 	int counter = 0;
-	double increment = -0.6;
-	while(counter < 192){
-		drawSight(pxx, pyy, (pan+increment));
-		increment = increment + 0.00625;
+	double increment = -0.5;
+	/* while(counter < 20){ */
+		//drawSight(pxx, pyy, (pan+increment), increment);
+		
+		drawSight(pxx, pyy, (pan), increment);
+		/*drawSight(pxx, pyy, (pan-increment), increment); */
+		/* increment = increment + 0.045;
 		counter = counter + 1;
-	}
+	} */
 	
-	
+
 	
 
 }
@@ -313,8 +406,8 @@ int main( int argc, char* args[] )
 
 			//Event handler
 			SDL_Event e;
-			px = 357;
-			py = 297;
+			px = 50;
+			py = 50;
 			pa = 0.0;
 			
 			
@@ -322,11 +415,13 @@ int main( int argc, char* args[] )
 			//While application is running
 			while( !quit )
 			{
+				startX = 1010;
 				//Handle events on queue
 				while( SDL_PollEvent( &e ) != 0 )
 				{
 					pxi = cos(pa);
 					pyi = sin(pa);
+					
 					
 					//User requests quit
 					if( e.type == SDL_QUIT )

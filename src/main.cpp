@@ -1,30 +1,53 @@
 /*This source code copyrighted by Lazy Foo' Productions (2004-2020)
 and may not be redistributed without written permission.*/
 
-//Using SDL and standard IO
+//Using SDL, SDL_image, standard IO, math, and strings
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdio.h>
 #include <string>
 #include <cmath>
+#include <iostream>
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-int x = 0, y = 0, t = 8, boxSize = 64;
+const int SCREEN_WIDTH = 1500;
+const int SCREEN_HEIGHT = 600;
+const double PI = 3.141592653589793238;
 int map[] = 
 {
-1,1,1,1,1,1,1,1,
-1,0,0,1,0,0,0,1,
-1,0,0,1,0,0,0,1,
-1,0,0,0,0,0,0,1,
-1,0,0,0,0,0,0,1,
-1,0,0,0,0,1,0,1,
-1,0,0,0,0,0,0,1,
-1,1,1,1,1,1,1,1
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,2,2,2,2,1,2,2,2,1,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,
+1,2,0,0,0,0,0,0,0,1,1,2,0,0,2,1,2,0,0,0,2,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,2,1,
+1,2,0,0,0,0,0,0,0,0,1,2,0,0,2,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,2,1,
+1,2,0,0,0,0,0,0,0,0,1,2,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,2,0,2,1,
+1,2,0,0,0,0,0,0,0,0,1,2,0,2,2,1,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,2,1,
+1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,2,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,2,0,2,1,
+1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,0,2,1,
+1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,1,2,2,2,1,
+1,2,0,0,0,1,2,0,0,0,1,2,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1,2,0,0,0,1,1,1,1,1,
+1,2,0,0,0,0,0,0,0,0,1,2,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,2,0,0,0,0,0,1,2,0,0,0,0,0,0,2,1,
+1,2,0,0,2,2,2,2,0,0,1,2,2,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,2,1,
+1,2,0,0,2,1,1,2,0,0,1,1,1,1,1,1,0,0,0,0,1,0,0,1,1,1,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1,0,0,2,1,
+1,2,0,0,2,1,1,2,0,0,0,0,0,0,0,1,0,0,0,0,2,0,0,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,2,0,0,2,2,2,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,2,1,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,2,1,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,0,0,0,0,0,2,1,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,2,0,0,1,2,2,0,0,0,1,2,0,0,0,1,2,2,2,0,0,0,0,0,2,1,0,0,0,2,1,0,0,2,2,2,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,2,0,0,1,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,0,0,2,1,2,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,1,1,0,1,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,2,2,2,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,2,0,0,2,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,0,0,0,0,1,2,0,0,2,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,
+1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+
 };
 
-int mapSize = sizeof(map)/sizeof(*map);
 
 //Starts up SDL and creates window
 bool init();
@@ -41,6 +64,7 @@ SDL_Window* gWindow = NULL;
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
 
+
 bool init()
 {
 	//Initialization flag
@@ -54,8 +78,14 @@ bool init()
 	}
 	else
 	{
+		//Set texture filtering to linear
+		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
+		{
+			printf( "Warning: Linear texture filtering not enabled!" );
+		}
+
 		//Create window
-		gWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+		gWindow = SDL_CreateWindow( "Maze Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
 		if( gWindow == NULL )
 		{
 			printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
@@ -88,6 +118,7 @@ bool init()
 
 	return success;
 }
+
 bool loadMedia()
 {
 	//Loading success flag
@@ -106,8 +137,10 @@ void close()
 	gRenderer = NULL;
 
 	//Quit SDL subsystems
+	IMG_Quit();
 	SDL_Quit();
 }
+
 int main( int argc, char* args[] )
 {
 	//Start up SDL and create window
@@ -128,57 +161,56 @@ int main( int argc, char* args[] )
 			bool quit = false;
 
 			//Event handler
-			SDL_Event e;
-
 			//While application is running
 			while( !quit )
 			{
+				startX = 1010;
 				//Handle events on queue
 				while( SDL_PollEvent( &e ) != 0 )
 				{
+					pxi = cos(pa);
+					pyi = sin(pa);
+					
+					
 					//User requests quit
 					if( e.type == SDL_QUIT )
 					{
 						quit = true;
 					}
-				}
 
+					else if( e.type == SDL_KEYDOWN )
+					{
+						//Select surfaces based on key press
+						switch( e.key.keysym.sym )
+						{
+							case SDLK_LEFT:
+							
+							break;
+
+							case SDLK_RIGHT:
+							
+							break;
+							case SDLK_UP:
+							
+							break;
+
+							case SDLK_DOWN:
+
+							break;
+
+							default:
+							// nothing.
+							break;
+						}
+					}
+				}
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
 				SDL_RenderClear( gRenderer );
-				/* for(int i = 0; i < mapSize; i++)
-				{
-					
-					if( i < t)
-					{
-						x = x + boxSize;						
-					}
-					else
-					{
-						t = t + 8;
-						x = 0;
-						y = y + boxSize;
-					}
-
-					//Render red filled quad
-					SDL_Rect fillRect = { x, y, boxSize, boxSize };
-					if(map[i] = 1)
-					{
-						SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0xFF );
-					}
-					else
-					{
-						SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x55, 0x55, 0xFF );
-					}
-				} */
-				
-				//Render red filled quad
-				SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
-				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0xFF );		
-				SDL_RenderFillRect( gRenderer, &fillRect );
-
 				//Update screen
 				SDL_RenderPresent( gRenderer );
+
+				
 			}
 		}
 	}
